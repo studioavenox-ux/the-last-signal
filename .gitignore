@@ -1,0 +1,15 @@
+# Godot 4 generated state
+.godot/
+.import/
+*.tmp
+# Android exports / local signing material
+*.apk
+*.aab
+*.keystore
+*.jks
+android/build/
+export_presets.cfg
+# Test caches / editor / OS
+__pycache__/
+*.pyc
+.DS_Store
