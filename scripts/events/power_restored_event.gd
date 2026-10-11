@@ -85,6 +85,8 @@ func play() -> void:
 	for light in lights:
 		light.surge(0.08, 0.7)
 	await Sequence.wait(self, 1.5)
-	GameState.set_objective(StoryText.get_objective(&"go_platform"))
+	# A fast player may already be on the platform (or in the ending): don't move the objective back.
+	if not GameState.has_flag(&"on_platform") and not GameState.has_flag(&"ending_started"):
+		GameState.set_objective(StoryText.get_objective(&"go_platform"))
 	has_finished = true
 	finished.emit()

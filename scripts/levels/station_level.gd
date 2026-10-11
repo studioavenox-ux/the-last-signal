@@ -48,6 +48,9 @@ func _ready() -> void:
 	for trigger in triggers.get_children():
 		if trigger is StoryTrigger:
 			(trigger as StoryTrigger).triggered.connect(_on_story_trigger)
+	# Ambience players live in the AudioManager autoload and survive scene changes:
+	# a restarted, unpowered station must not keep humming.
+	AudioManager.stop_ambience(&"hum", 0.3)
 	AudioManager.start_ambience(&"rain", -5.0, 3.0)
 	_update_mouse_mode()
 	if skip_intro:

@@ -13,6 +13,7 @@ const SUITES := [
 	"res://tests/test_procedural_assets.gd",
 	"res://tests/test_scenes_load.gd",
 	"res://tests/test_gameplay_flow.gd",
+	"res://tests/test_edge_cases.gd",
 ]
 
 ## Safety net: a broken suite must never hang CI or a terminal.
