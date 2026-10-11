@@ -1,0 +1,59 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/interactables/railway_signal.gd" id="1_signal"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_post"]
+albedo_color = Color(0.22, 0.23, 0.25, 1)
+metallic = 0.5
+roughness = 0.6
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_head"]
+albedo_color = Color(0.03, 0.03, 0.035, 1)
+roughness = 0.7
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_post"]
+top_radius = 0.07
+bottom_radius = 0.09
+height = 4.4
+radial_segments = 12
+rings = 1
+
+[sub_resource type="BoxMesh" id="BoxMesh_head"]
+size = Vector3(0.42, 1.05, 0.28)
+
+[sub_resource type="SphereMesh" id="SphereMesh_lamp"]
+radius = 0.1
+height = 0.2
+radial_segments = 16
+rings = 8
+
+[node name="RailwaySignal" type="Node3D"]
+script = ExtResource("1_signal")
+
+[node name="Post" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.2, 0)
+mesh = SubResource("CylinderMesh_post")
+surface_material_override/0 = SubResource("StandardMaterial3D_post")
+
+[node name="Head" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.2, 0)
+mesh = SubResource("BoxMesh_head")
+surface_material_override/0 = SubResource("StandardMaterial3D_head")
+
+[node name="Lamp_green" type="MeshInstance3D" parent="Head"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.32, 0.12)
+mesh = SubResource("SphereMesh_lamp")
+
+[node name="Lamp_yellow" type="MeshInstance3D" parent="Head"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.12)
+mesh = SubResource("SphereMesh_lamp")
+
+[node name="Lamp_red" type="MeshInstance3D" parent="Head"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.32, 0.12)
+mesh = SubResource("SphereMesh_lamp")
+
+[node name="Glow" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.0, 0.7)
+light_color = Color(1, 0.1, 0.06, 1)
+light_energy = 1.4
+omni_range = 4.5

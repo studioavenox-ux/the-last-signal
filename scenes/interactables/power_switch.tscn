@@ -1,0 +1,87 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/interactables/power_switch.gd" id="1_switch"]
+[ext_resource type="Script" path="res://scripts/interaction/interactable.gd" id="2_interactable"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_housing"]
+albedo_color = Color(0.2, 0.21, 0.23, 1)
+metallic = 0.5
+roughness = 0.55
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_lever"]
+albedo_color = Color(0.55, 0.56, 0.58, 1)
+metallic = 0.8
+roughness = 0.35
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_knob"]
+albedo_color = Color(0.06, 0.06, 0.06, 1)
+roughness = 0.6
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_lamp"]
+albedo_color = Color(0.3, 0.05, 0.03, 1)
+emission_enabled = true
+emission = Color(1, 0.15, 0.1, 1)
+emission_energy_multiplier = 0.05
+
+[sub_resource type="BoxMesh" id="BoxMesh_housing"]
+size = Vector3(0.26, 0.42, 0.1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_lever"]
+size = Vector3(0.045, 0.045, 0.18)
+
+[sub_resource type="BoxMesh" id="BoxMesh_knob"]
+size = Vector3(0.12, 0.06, 0.06)
+
+[sub_resource type="SphereMesh" id="SphereMesh_lamp"]
+radius = 0.032
+height = 0.064
+radial_segments = 12
+rings = 6
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_interact"]
+size = Vector3(0.36, 0.62, 0.32)
+
+[node name="PowerSwitch" type="Node3D"]
+script = ExtResource("1_switch")
+
+[node name="Housing" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.05)
+mesh = SubResource("BoxMesh_housing")
+surface_material_override/0 = SubResource("StandardMaterial3D_housing")
+
+[node name="LeverPivot" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.03, 0.1)
+
+[node name="Lever" type="MeshInstance3D" parent="LeverPivot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.09)
+mesh = SubResource("BoxMesh_lever")
+surface_material_override/0 = SubResource("StandardMaterial3D_lever")
+
+[node name="Knob" type="MeshInstance3D" parent="LeverPivot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.19)
+mesh = SubResource("BoxMesh_knob")
+surface_material_override/0 = SubResource("StandardMaterial3D_knob")
+
+[node name="Lamp" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.15, 0.105)
+material_override = SubResource("StandardMaterial3D_lamp")
+mesh = SubResource("SphereMesh_lamp")
+
+[node name="Label" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.29, 0.06)
+pixel_size = 0.0025
+double_sided = false
+alpha_cut = 1
+text = "RED"
+font_size = 40
+outline_size = 8
+
+[node name="Interactable" type="Area3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.16)
+collision_layer = 4
+collision_mask = 0
+script = ExtResource("2_interactable")
+prompt_text = "Pull the breaker"
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Interactable"]
+shape = SubResource("BoxShape3D_interact")

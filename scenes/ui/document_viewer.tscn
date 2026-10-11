@@ -1,0 +1,98 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/document_viewer.gd" id="1_viewer"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_paper"]
+content_margin_left = 40.0
+content_margin_top = 28.0
+content_margin_right = 40.0
+content_margin_bottom = 24.0
+bg_color = Color(0.92, 0.89, 0.8, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.55, 0.5, 0.4, 1)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+shadow_color = Color(0, 0, 0, 0.6)
+shadow_size = 18
+
+[node name="DocumentViewer" type="CanvasLayer"]
+process_mode = 3
+layer = 20
+script = ExtResource("1_viewer")
+
+[node name="Root" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Dim" type="ColorRect" parent="Root"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.72)
+
+[node name="Center" type="CenterContainer" parent="Root"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Paper" type="PanelContainer" parent="Root/Center"]
+custom_minimum_size = Vector2(840, 0)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_paper")
+
+[node name="VBox" type="VBoxContainer" parent="Root/Center/Paper"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="DocTitle" type="Label" parent="Root/Center/Paper/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.12, 0.1, 0.09, 1)
+theme_override_constants/outline_size = 0
+theme_override_font_sizes/font_size = 32
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="Rule" type="ColorRect" parent="Root/Center/Paper/VBox"]
+custom_minimum_size = Vector2(0, 2)
+layout_mode = 2
+color = Color(0.45, 0.4, 0.32, 1)
+
+[node name="Scroll" type="ScrollContainer" parent="Root/Center/Paper/VBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 400)
+layout_mode = 2
+horizontal_scroll_mode = 0
+
+[node name="DocBody" type="Label" parent="Root/Center/Paper/VBox/Scroll"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(740, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.13, 0.12, 0.11, 1)
+theme_override_constants/outline_size = 0
+theme_override_constants/line_spacing = 4
+theme_override_font_sizes/font_size = 26
+autowrap_mode = 3
+
+[node name="CloseButton" type="Button" parent="Root/Center/Paper/VBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(240, 64)
+layout_mode = 2
+size_flags_horizontal = 4
+text = "Close"

@@ -1,0 +1,112 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/interactables/station_clock.gd" id="1_clock"]
+[ext_resource type="Script" path="res://scripts/interaction/interactable.gd" id="2_interactable"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_rim"]
+albedo_color = Color(0.1, 0.1, 0.11, 1)
+metallic = 0.6
+roughness = 0.45
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_face"]
+albedo_color = Color(0.92, 0.9, 0.84, 1)
+emission_enabled = true
+emission = Color(0.92, 0.88, 0.75, 1)
+emission_energy_multiplier = 0.15
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_hand"]
+albedo_color = Color(0.05, 0.05, 0.05, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_second"]
+albedo_color = Color(0.75, 0.08, 0.05, 1)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_rim"]
+top_radius = 0.5
+bottom_radius = 0.5
+height = 0.08
+radial_segments = 32
+rings = 1
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_face"]
+top_radius = 0.455
+bottom_radius = 0.455
+height = 0.01
+radial_segments = 32
+rings = 1
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_cap"]
+top_radius = 0.025
+bottom_radius = 0.025
+height = 0.02
+radial_segments = 12
+rings = 1
+
+[sub_resource type="BoxMesh" id="BoxMesh_hour"]
+size = Vector3(0.04, 0.24, 0.008)
+
+[sub_resource type="BoxMesh" id="BoxMesh_minute"]
+size = Vector3(0.026, 0.36, 0.008)
+
+[sub_resource type="BoxMesh" id="BoxMesh_second"]
+size = Vector3(0.008, 0.4, 0.006)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_interact"]
+size = Vector3(1.1, 1.1, 0.9)
+
+[node name="StationClock" type="Node3D"]
+script = ExtResource("1_clock")
+object_id = &"station_clock"
+prompt_text = "Examine the clock"
+lines_id = &"station_clock"
+
+[node name="Rim" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0, 0.04)
+mesh = SubResource("CylinderMesh_rim")
+surface_material_override/0 = SubResource("StandardMaterial3D_rim")
+
+[node name="Face" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0, 0.083)
+mesh = SubResource("CylinderMesh_face")
+surface_material_override/0 = SubResource("StandardMaterial3D_face")
+
+[node name="Ticks" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.09)
+
+[node name="HourHand" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.094)
+
+[node name="Mesh" type="MeshInstance3D" parent="HourHand"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.09, 0)
+mesh = SubResource("BoxMesh_hour")
+surface_material_override/0 = SubResource("StandardMaterial3D_hand")
+
+[node name="MinuteHand" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.1)
+
+[node name="Mesh" type="MeshInstance3D" parent="MinuteHand"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.15, 0)
+mesh = SubResource("BoxMesh_minute")
+surface_material_override/0 = SubResource("StandardMaterial3D_hand")
+
+[node name="SecondHand" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.106)
+
+[node name="Mesh" type="MeshInstance3D" parent="SecondHand"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.14, 0)
+mesh = SubResource("BoxMesh_second")
+surface_material_override/0 = SubResource("StandardMaterial3D_second")
+
+[node name="Cap" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0, 0.11)
+mesh = SubResource("CylinderMesh_cap")
+surface_material_override/0 = SubResource("StandardMaterial3D_rim")
+
+[node name="Interactable" type="Area3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.15, 0.4)
+collision_layer = 4
+collision_mask = 0
+script = ExtResource("2_interactable")
+prompt_text = "Examine the clock"
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Interactable"]
+shape = SubResource("BoxShape3D_interact")

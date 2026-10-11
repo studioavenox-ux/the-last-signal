@@ -1,0 +1,201 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/title_screen.gd" id="1_title"]
+[ext_resource type="Script" path="res://scripts/ui/title_backdrop.gd" id="2_backdrop"]
+
+[node name="TitleScreen" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_title")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.02, 0.025, 0.035, 1)
+
+[node name="Backdrop" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("2_backdrop")
+
+[node name="Margin" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 90
+theme_override_constants/margin_top = 50
+theme_override_constants/margin_right = 60
+theme_override_constants/margin_bottom = 60
+
+[node name="Left" type="VBoxContainer" parent="Margin"]
+layout_mode = 2
+size_flags_horizontal = 0
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="Title" type="Label" parent="Margin/Left"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.93, 0.9, 1)
+theme_override_constants/outline_size = 10
+theme_override_font_sizes/font_size = 76
+text = "THE LAST SIGNAL"
+
+[node name="Tagline" type="Label" parent="Margin/Left"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.4, 0.3, 1)
+theme_override_font_sizes/font_size = 30
+text = "Platform Three. Midnight."
+
+[node name="Premise" type="Label" parent="Margin/Left"]
+custom_minimum_size = Vector2(600, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.72, 0.75, 0.8, 1)
+theme_override_font_sizes/font_size = 22
+text = "Aarav's brother Kabir vanished forty-one days ago. Tonight, a message arrives from his number. It leads to Raatpur Junction - a station that has been closed for years."
+autowrap_mode = 3
+
+[node name="Spacer" type="Control" parent="Margin/Left"]
+custom_minimum_size = Vector2(0, 14)
+layout_mode = 2
+
+[node name="BeginButton" type="Button" parent="Margin/Left"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(340, 70)
+layout_mode = 2
+size_flags_horizontal = 0
+text = "Begin"
+
+[node name="HowButton" type="Button" parent="Margin/Left"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(340, 70)
+layout_mode = 2
+size_flags_horizontal = 0
+text = "How to play"
+
+[node name="CreditsButton" type="Button" parent="Margin/Left"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(340, 70)
+layout_mode = 2
+size_flags_horizontal = 0
+text = "Credits & licenses"
+
+[node name="QuitButton" type="Button" parent="Margin/Left"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(340, 70)
+layout_mode = 2
+size_flags_horizontal = 0
+text = "Quit"
+
+[node name="VersionLabel" type="Label" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -760.0
+offset_top = -48.0
+offset_right = -24.0
+offset_bottom = -14.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_colors/font_color = Color(0.55, 0.58, 0.64, 1)
+theme_override_font_sizes/font_size = 18
+horizontal_alignment = 2
+
+[node name="HowPanel" type="CenterContainer" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Panel" type="PanelContainer" parent="HowPanel"]
+custom_minimum_size = Vector2(800, 0)
+layout_mode = 2
+
+[node name="VBox" type="VBoxContainer" parent="HowPanel/Panel"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="Heading" type="Label" parent="HowPanel/Panel/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.38, 0.28, 1)
+theme_override_font_sizes/font_size = 34
+text = "HOW TO PLAY"
+horizontal_alignment = 1
+
+[node name="HowText" type="Label" parent="HowPanel/Panel/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+
+[node name="HowBackButton" type="Button" parent="HowPanel/Panel/VBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(240, 64)
+layout_mode = 2
+size_flags_horizontal = 4
+text = "Back"
+
+[node name="CreditsPanel" type="CenterContainer" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Panel" type="PanelContainer" parent="CreditsPanel"]
+custom_minimum_size = Vector2(980, 600)
+layout_mode = 2
+
+[node name="VBox" type="VBoxContainer" parent="CreditsPanel/Panel"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Heading" type="Label" parent="CreditsPanel/Panel/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.38, 0.28, 1)
+theme_override_font_sizes/font_size = 34
+text = "CREDITS & LICENSES"
+horizontal_alignment = 1
+
+[node name="CreditsText" type="RichTextLabel" parent="CreditsPanel/Panel/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_font_sizes/normal_font_size = 20
+theme_override_font_sizes/bold_font_size = 22
+bbcode_enabled = true
+threaded = true
+selection_enabled = false
+
+[node name="CreditsBackButton" type="Button" parent="CreditsPanel/Panel/VBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(240, 64)
+layout_mode = 2
+size_flags_horizontal = 4
+text = "Back"

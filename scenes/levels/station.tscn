@@ -1,0 +1,378 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/levels/station_level.gd" id="1_level"]
+[ext_resource type="Script" path="res://scripts/level/station_builder.gd" id="2_builder"]
+[ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="3_player"]
+[ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="4_hud"]
+[ext_resource type="PackedScene" path="res://scenes/ui/touch_controls.tscn" id="5_touch"]
+[ext_resource type="PackedScene" path="res://scenes/ui/document_viewer.tscn" id="6_docs"]
+[ext_resource type="PackedScene" path="res://scenes/ui/pause_menu.tscn" id="7_pause"]
+[ext_resource type="PackedScene" path="res://scenes/interactables/door_double.tscn" id="8_door_double"]
+[ext_resource type="PackedScene" path="res://scenes/interactables/door_single.tscn" id="9_door_single"]
+[ext_resource type="PackedScene" path="res://scenes/interactables/gate_grille.tscn" id="10_gate"]
+[ext_resource type="PackedScene" path="res://scenes/interactables/readable_note.tscn" id="11_note"]
+[ext_resource type="PackedScene" path="res://scenes/interactables/readable_poster.tscn" id="12_poster"]
+[ext_resource type="PackedScene" path="res://scenes/interactables/power_switch.tscn" id="13_switch"]
+[ext_resource type="PackedScene" path="res://scenes/interactables/station_clock.tscn" id="14_clock"]
+[ext_resource type="PackedScene" path="res://scenes/interactables/station_monitor.tscn" id="15_monitor"]
+[ext_resource type="PackedScene" path="res://scenes/interactables/railway_signal.tscn" id="16_signal"]
+[ext_resource type="PackedScene" path="res://scenes/interactables/kabir_phone.tscn" id="17_phone"]
+[ext_resource type="PackedScene" path="res://scenes/interactables/apparition.tscn" id="18_apparition"]
+[ext_resource type="PackedScene" path="res://scenes/interactables/examine_spot.tscn" id="19_examine"]
+[ext_resource type="Script" path="res://scripts/puzzle/switch_puzzle.gd" id="20_puzzle"]
+[ext_resource type="Script" path="res://scripts/lighting/flicker_light.gd" id="21_flicker"]
+[ext_resource type="Script" path="res://scripts/events/story_trigger.gd" id="22_trigger"]
+[ext_resource type="Script" path="res://scripts/events/power_restored_event.gd" id="23_power_event"]
+[ext_resource type="Script" path="res://scripts/events/ending_sequence.gd" id="24_ending"]
+
+[sub_resource type="Environment" id="Environment_station"]
+background_mode = 1
+background_color = Color(0.015, 0.018, 0.026, 1)
+ambient_light_source = 2
+ambient_light_color = Color(0.17, 0.2, 0.28, 1)
+ambient_light_energy = 0.65
+tonemap_mode = 2
+tonemap_exposure = 1.1
+fog_enabled = true
+fog_light_color = Color(0.07, 0.08, 0.11, 1)
+fog_density = 0.035
+fog_sky_affect = 0.0
+
+[sub_resource type="BoxMesh" id="BoxMesh_bulb"]
+size = Vector3(0.34, 0.07, 0.16)
+
+[sub_resource type="BoxMesh" id="BoxMesh_tube"]
+size = Vector3(1.2, 0.05, 0.08)
+
+[sub_resource type="BoxMesh" id="BoxMesh_backboard"]
+size = Vector3(1.5, 1.05, 0.04)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_backboard"]
+albedo_color = Color(0.16, 0.17, 0.18, 1)
+metallic = 0.4
+roughness = 0.6
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_rain"]
+transparency = 1
+shading_mode = 0
+albedo_color = Color(0.65, 0.72, 0.85, 0.35)
+
+[sub_resource type="BoxMesh" id="BoxMesh_raindrop"]
+material = SubResource("StandardMaterial3D_rain")
+size = Vector3(0.012, 0.45, 0.012)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_trigger_waiting"]
+size = Vector3(13.6, 3, 4.6)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_trigger_electrical"]
+size = Vector3(5.6, 3, 5.6)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_trigger_platform"]
+size = Vector3(19.6, 3, 7.4)
+
+[node name="Station" type="Node3D"]
+script = ExtResource("1_level")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_station")
+
+[node name="LightningLight" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.9063, -0.3462, 0.2424, 0, 0.5736, 0.8192, -0.4226, -0.7424, 0.5198, 0, 10, 0)
+visible = false
+light_color = Color(0.75, 0.82, 1, 1)
+light_energy = 0.0
+
+[node name="Geometry" type="Node3D" parent="."]
+script = ExtResource("2_builder")
+
+[node name="Lights" type="Node3D" parent="."]
+
+[node name="EntranceBulb" type="OmniLight3D" parent="Lights" groups=["station_lights"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.1, -3)
+light_color = Color(1, 0.78, 0.5, 1)
+omni_range = 9.5
+script = ExtResource("21_flicker")
+mode = 2
+base_energy = 0.9
+flicker_amount = 0.25
+emergency_energy = 1.1
+
+[node name="Fixture" type="MeshInstance3D" parent="Lights/EntranceBulb"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.12, 0)
+mesh = SubResource("BoxMesh_bulb")
+
+[node name="WaitingBulbA" type="OmniLight3D" parent="Lights" groups=["station_lights"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.5, 4.1, -13)
+light_color = Color(1, 0.8, 0.55, 1)
+omni_range = 9
+script = ExtResource("21_flicker")
+mode = 0
+base_energy = 0.8
+flicker_amount = 0.3
+emergency_energy = 1
+
+[node name="Fixture" type="MeshInstance3D" parent="Lights/WaitingBulbA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.12, 0)
+mesh = SubResource("BoxMesh_bulb")
+
+[node name="WaitingBulbB" type="OmniLight3D" parent="Lights" groups=["station_lights"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.5, 4.1, -13)
+light_color = Color(1, 0.8, 0.55, 1)
+omni_range = 9
+script = ExtResource("21_flicker")
+mode = 2
+base_energy = 0.65
+flicker_amount = 0.55
+emergency_energy = 1
+
+[node name="Fixture" type="MeshInstance3D" parent="Lights/WaitingBulbB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.12, 0)
+mesh = SubResource("BoxMesh_bulb")
+
+[node name="CorridorTube" type="OmniLight3D" parent="Lights" groups=["station_lights"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11, 2.62, -12)
+light_color = Color(0.75, 0.88, 1, 1)
+omni_range = 6.5
+script = ExtResource("21_flicker")
+mode = 2
+base_energy = 0.75
+flicker_amount = 0.75
+emergency_energy = 0.9
+
+[node name="Fixture" type="MeshInstance3D" parent="Lights/CorridorTube"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.12, 0)
+mesh = SubResource("BoxMesh_tube")
+
+[node name="ElectricalLamp" type="OmniLight3D" parent="Lights" groups=["station_lights"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -18, 3, -12)
+light_color = Color(1, 0.3, 0.22, 1)
+omni_range = 7.5
+script = ExtResource("21_flicker")
+mode = 1
+base_energy = 0.6
+flicker_amount = 0.1
+emergency_energy = 1.3
+
+[node name="Fixture" type="MeshInstance3D" parent="Lights/ElectricalLamp"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.12, 0)
+mesh = SubResource("BoxMesh_bulb")
+
+[node name="PlatformLampA" type="OmniLight3D" parent="Lights" groups=["station_lights"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 4.35, -22)
+light_color = Color(1, 0.62, 0.3, 1)
+omni_range = 11
+script = ExtResource("21_flicker")
+mode = 1
+base_energy = 1
+flicker_amount = 0.2
+emergency_energy = 1.2
+
+[node name="Fixture" type="MeshInstance3D" parent="Lights/PlatformLampA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.12, 0)
+mesh = SubResource("BoxMesh_bulb")
+
+[node name="PlatformLampB" type="OmniLight3D" parent="Lights" groups=["station_lights"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 4.35, -22)
+light_color = Color(1, 0.62, 0.3, 1)
+omni_range = 11
+script = ExtResource("21_flicker")
+mode = 0
+base_energy = 1
+flicker_amount = 0.3
+emergency_energy = 1.2
+
+[node name="Fixture" type="MeshInstance3D" parent="Lights/PlatformLampB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.12, 0)
+mesh = SubResource("BoxMesh_bulb")
+
+[node name="Rain" type="CPUParticles3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 6.5, -30.5)
+amount = 260
+lifetime = 0.62
+preprocess = 1.0
+mesh = SubResource("BoxMesh_raindrop")
+emission_shape = 3
+emission_box_extents = Vector3(13, 0.2, 4)
+direction = Vector3(0, -1, 0)
+spread = 4.0
+initial_velocity_min = 11.0
+initial_velocity_max = 13.0
+
+[node name="Interactables" type="Node3D" parent="."]
+
+[node name="EntranceDoors" parent="Interactables" instance=ExtResource("8_door_double")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 2)
+door_id = &"entrance"
+locked_lines_id = &"entrance_doors"
+
+[node name="StationNotice" parent="Interactables" instance=ExtResource("12_poster")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -5.89, 1.6, -3.75)
+document_id = &"station_notice"
+prompt_text = "Read the notice"
+heading_text = "NOTICE"
+preview_text = "RAATPUR JUNCTION\nCLOSED UNTIL FURTHER NOTICE"
+
+[node name="StationClock" parent="Interactables" instance=ExtResource("14_clock")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.2, 2.75, -7.9)
+
+[node name="BookingWindow" parent="Interactables" instance=ExtResource("19_examine")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 5.72, 1.75, -3.5)
+object_id = &"ticket_window"
+prompt_text = "Look through the glass"
+lines_id = &"ticket_window"
+
+[node name="KabirNote" parent="Interactables" instance=ExtResource("11_note")]
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 3.3, 0.49, -14.5)
+document_id = &"kabir_note"
+prompt_text = "Read the torn page"
+heading_text = ""
+show_backing = false
+
+[node name="SignalPoster" parent="Interactables" instance=ExtResource("12_poster")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 6.89, 1.6, -13)
+document_id = &"signal_poster"
+prompt_text = "Read the safety poster"
+heading_text = "KNOW YOUR SIGNALS"
+preview_text = "RED - DANGER\nYELLOW - CAUTION\nGREEN - CLEAR"
+
+[node name="DepartureBoard" parent="Interactables" instance=ExtResource("15_monitor")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.55, -17.88)
+screen_size = Vector2(2.6, 0.5)
+text_color = Color(1, 0.55, 0.15, 1)
+font_size = 48
+text_height = 0.085
+off_lines_id = &"dead_board"
+examine_prompt = "Examine the departure board"
+
+[node name="MaintenanceDoor" parent="Interactables" instance=ExtResource("9_door_single")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -7, 0, -12)
+door_id = &"maintenance"
+display_name = "maintenance door"
+
+[node name="MaintenanceLog" parent="Interactables" instance=ExtResource("11_note")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 1.45, -12.89)
+document_id = &"maintenance_log"
+prompt_text = "Read the maintenance log"
+heading_text = "MAINTENANCE LOG"
+
+[node name="BreakerPanel" type="Node3D" parent="Interactables"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -20.9, 0, -12)
+script = ExtResource("20_puzzle")
+door_path = NodePath("../PlatformGate")
+
+[node name="Backboard" type="MeshInstance3D" parent="Interactables/BreakerPanel"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.45, 0.02)
+mesh = SubResource("BoxMesh_backboard")
+surface_material_override/0 = SubResource("StandardMaterial3D_backboard")
+
+[node name="Sign" type="Label3D" parent="Interactables/BreakerPanel"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.87, 0.045)
+pixel_size = 0.0022
+double_sided = false
+alpha_cut = 1
+modulate = Color(1, 0.85, 0.3, 1)
+text = "EMERGENCY BREAKERS - PLATFORM 3 SIGNAL CIRCUIT"
+font_size = 22
+outline_size = 0
+
+[node name="SwitchGreen" parent="Interactables/BreakerPanel" instance=ExtResource("13_switch")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.45, 1.38, 0.04)
+switch_id = &"green"
+label_text = "GREEN"
+lamp_color = Color(0.15, 1, 0.35, 1)
+
+[node name="SwitchRed" parent="Interactables/BreakerPanel" instance=ExtResource("13_switch")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.38, 0.04)
+switch_id = &"red"
+label_text = "RED"
+lamp_color = Color(1, 0.12, 0.08, 1)
+
+[node name="SwitchYellow" parent="Interactables/BreakerPanel" instance=ExtResource("13_switch")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.45, 1.38, 0.04)
+switch_id = &"yellow"
+label_text = "YELLOW"
+lamp_color = Color(1, 0.75, 0.1, 1)
+
+[node name="ControlMonitor" parent="Interactables" instance=ExtResource("15_monitor")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -20.9, 1.6, -13.55)
+text_color = Color(0.45, 1, 0.55, 1)
+font_size = 22
+text_height = 0.032
+off_lines_id = &"control_monitor_off"
+examine_prompt = "Examine the control monitor"
+
+[node name="PlatformGate" parent="Interactables" instance=ExtResource("10_gate")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -18)
+door_id = &"platform_gate"
+locked = true
+locked_lines_id = &"gate_locked"
+
+[node name="KabirPhone" parent="Interactables" instance=ExtResource("17_phone")]
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 4.3, 0.49, -20.5)
+
+[node name="RailwaySignal" parent="Interactables" instance=ExtResource("16_signal")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, -1.3, -26.8)
+
+[node name="Apparition" parent="Interactables" instance=ExtResource("18_apparition")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.8, 0, -22.5)
+
+[node name="Triggers" type="Node3D" parent="."]
+
+[node name="EnterWaiting" type="Area3D" parent="Triggers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -10.6)
+collision_layer = 0
+collision_mask = 2
+script = ExtResource("22_trigger")
+trigger_id = &"enter_waiting"
+
+[node name="Shape" type="CollisionShape3D" parent="Triggers/EnterWaiting"]
+shape = SubResource("BoxShape3D_trigger_waiting")
+
+[node name="EnterElectrical" type="Area3D" parent="Triggers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -18, 1.5, -12)
+collision_layer = 0
+collision_mask = 2
+script = ExtResource("22_trigger")
+trigger_id = &"enter_electrical"
+blocking_flag = &"power_restored"
+
+[node name="Shape" type="CollisionShape3D" parent="Triggers/EnterElectrical"]
+shape = SubResource("BoxShape3D_trigger_electrical")
+
+[node name="EnterPlatform" type="Area3D" parent="Triggers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -21.8)
+collision_layer = 0
+collision_mask = 2
+script = ExtResource("22_trigger")
+trigger_id = &"enter_platform"
+required_flag = &"power_restored"
+
+[node name="Shape" type="CollisionShape3D" parent="Triggers/EnterPlatform"]
+shape = SubResource("BoxShape3D_trigger_platform")
+
+[node name="Events" type="Node" parent="."]
+
+[node name="PowerRestoredEvent" type="Node" parent="Events"]
+script = ExtResource("23_power_event")
+control_monitor_path = NodePath("../../Interactables/ControlMonitor")
+departure_board_path = NodePath("../../Interactables/DepartureBoard")
+station_clock_path = NodePath("../../Interactables/StationClock")
+breaker_panel_path = NodePath("../../Interactables/BreakerPanel")
+world_environment_path = NodePath("../../WorldEnvironment")
+
+[node name="EndingSequence" type="Node" parent="Events"]
+script = ExtResource("24_ending")
+station_clock_path = NodePath("../../Interactables/StationClock")
+railway_signal_path = NodePath("../../Interactables/RailwaySignal")
+phone_path = NodePath("../../Interactables/KabirPhone")
+
+[node name="Player" parent="." instance=ExtResource("3_player")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, -0.2)
+
+[node name="HUD" parent="." instance=ExtResource("4_hud")]
+
+[node name="TouchControls" parent="." instance=ExtResource("5_touch")]
+
+[node name="DocumentViewer" parent="." instance=ExtResource("6_docs")]
+
+[node name="PauseMenu" parent="." instance=ExtResource("7_pause")]

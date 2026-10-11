@@ -1,0 +1,54 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/interactables/station_monitor.gd" id="1_monitor"]
+[ext_resource type="Script" path="res://scripts/interaction/interactable.gd" id="2_interactable"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_body"]
+albedo_color = Color(0.09, 0.09, 0.1, 1)
+roughness = 0.6
+
+[sub_resource type="BoxMesh" id="BoxMesh_body"]
+resource_local_to_scene = true
+size = Vector3(1, 0.62, 0.1)
+
+[sub_resource type="QuadMesh" id="QuadMesh_screen"]
+resource_local_to_scene = true
+size = Vector2(0.9, 0.52)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_interact"]
+resource_local_to_scene = true
+size = Vector3(1, 0.67, 0.4)
+
+[node name="StationMonitor" type="Node3D"]
+script = ExtResource("1_monitor")
+
+[node name="Body" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.05)
+mesh = SubResource("BoxMesh_body")
+surface_material_override/0 = SubResource("StandardMaterial3D_body")
+
+[node name="Screen" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.1015)
+mesh = SubResource("QuadMesh_screen")
+
+[node name="Text" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.104)
+pixel_size = 0.0011
+double_sided = false
+alpha_cut = 1
+modulate = Color(1, 0.62, 0.22, 1)
+font_size = 26
+outline_size = 0
+line_spacing = 2.0
+autowrap_mode = 3
+width = 750.0
+
+[node name="Interactable" type="Area3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.25)
+collision_layer = 4
+collision_mask = 0
+script = ExtResource("2_interactable")
+prompt_text = "Examine the monitor"
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Interactable"]
+shape = SubResource("BoxShape3D_interact")

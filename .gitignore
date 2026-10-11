@@ -1,0 +1,42 @@
+# --- Godot 4 ---
+# Editor cache / imported resources (regenerated automatically on project open)
+.godot/
+# Android Gradle build template (installed per machine via Project > Install Android Build Template)
+/android/
+
+# Godot 3 leftovers (not used, kept for safety)
+.import/
+
+# Export output - build artifacts are never committed
+/builds/
+/export/
+*.apk
+*.aab
+*.idsig
+*.pck
+*.zip
+
+# Signing material and credentials - NEVER commit these
+*.keystore
+*.jks
+export_credentials.cfg
+.env
+.env.*
+
+# C# / Mono (not used by this project)
+.mono/
+data_*/
+mono_crash.*.json
+
+# Editor / OS noise
+.vscode/
+.idea/
+*.swp
+*~
+.DS_Store
+Thumbs.db
+*.tmp
+
+# Python tooling caches (gdtoolkit etc.)
+__pycache__/
+.venv/

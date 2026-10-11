@@ -1,0 +1,180 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/interactables/door.gd" id="1_door"]
+[ext_resource type="Script" path="res://scripts/interaction/interactable.gd" id="2_interactable"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_metal"]
+albedo_color = Color(0.2, 0.22, 0.24, 1)
+metallic = 0.6
+roughness = 0.5
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_lockbox"]
+albedo_color = Color(0.12, 0.12, 0.13, 1)
+roughness = 0.6
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_lamp"]
+albedo_color = Color(1, 0.12, 0.08, 1)
+emission_enabled = true
+emission = Color(1, 0.12, 0.08, 1)
+emission_energy_multiplier = 2.5
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_sign"]
+albedo_color = Color(0.9, 0.74, 0.12, 1)
+roughness = 0.6
+
+[sub_resource type="BoxMesh" id="BoxMesh_bar"]
+size = Vector3(0.035, 2.5, 0.035)
+
+[sub_resource type="BoxMesh" id="BoxMesh_rail"]
+size = Vector3(2.36, 0.06, 0.05)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_panel"]
+size = Vector3(2.36, 2.56, 0.06)
+
+[sub_resource type="BoxMesh" id="BoxMesh_frame_side"]
+size = Vector3(0.08, 2.68, 0.26)
+
+[sub_resource type="BoxMesh" id="BoxMesh_frame_top"]
+size = Vector3(2.56, 0.08, 0.26)
+
+[sub_resource type="BoxMesh" id="BoxMesh_lockbox"]
+size = Vector3(0.16, 0.26, 0.1)
+
+[sub_resource type="SphereMesh" id="SphereMesh_lamp"]
+radius = 0.025
+height = 0.05
+radial_segments = 12
+rings = 6
+
+[sub_resource type="BoxMesh" id="BoxMesh_sign"]
+size = Vector3(1.9, 0.45, 0.05)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_interact"]
+size = Vector3(2.4, 2.6, 0.9)
+
+[node name="GateGrille" type="Node3D"]
+script = ExtResource("1_door")
+display_name = "Platform 3 gate"
+open_angle_degrees = 95.0
+open_time = 1.4
+
+[node name="FrameLeft" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.24, 1.34, 0)
+mesh = SubResource("BoxMesh_frame_side")
+surface_material_override/0 = SubResource("StandardMaterial3D_metal")
+
+[node name="FrameRight" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.24, 1.34, 0)
+mesh = SubResource("BoxMesh_frame_side")
+surface_material_override/0 = SubResource("StandardMaterial3D_metal")
+
+[node name="FrameTop" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.64, 0)
+mesh = SubResource("BoxMesh_frame_top")
+surface_material_override/0 = SubResource("StandardMaterial3D_metal")
+
+[node name="Hinge" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.19, 0, 0)
+
+[node name="Panel" type="AnimatableBody3D" parent="Hinge"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.18, 1.3, 0)
+collision_mask = 0
+sync_to_physics = false
+
+[node name="Collision" type="CollisionShape3D" parent="Hinge/Panel"]
+shape = SubResource("BoxShape3D_panel")
+
+[node name="Bar0" type="MeshInstance3D" parent="Hinge/Panel"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.04, 0, 0)
+mesh = SubResource("BoxMesh_bar")
+surface_material_override/0 = SubResource("StandardMaterial3D_metal")
+
+[node name="Bar1" type="MeshInstance3D" parent="Hinge/Panel"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.78, 0, 0)
+mesh = SubResource("BoxMesh_bar")
+surface_material_override/0 = SubResource("StandardMaterial3D_metal")
+
+[node name="Bar2" type="MeshInstance3D" parent="Hinge/Panel"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.52, 0, 0)
+mesh = SubResource("BoxMesh_bar")
+surface_material_override/0 = SubResource("StandardMaterial3D_metal")
+
+[node name="Bar3" type="MeshInstance3D" parent="Hinge/Panel"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.26, 0, 0)
+mesh = SubResource("BoxMesh_bar")
+surface_material_override/0 = SubResource("StandardMaterial3D_metal")
+
+[node name="Bar4" type="MeshInstance3D" parent="Hinge/Panel"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.00, 0, 0)
+mesh = SubResource("BoxMesh_bar")
+surface_material_override/0 = SubResource("StandardMaterial3D_metal")
+
+[node name="Bar5" type="MeshInstance3D" parent="Hinge/Panel"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.26, 0, 0)
+mesh = SubResource("BoxMesh_bar")
+surface_material_override/0 = SubResource("StandardMaterial3D_metal")
+
+[node name="Bar6" type="MeshInstance3D" parent="Hinge/Panel"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.52, 0, 0)
+mesh = SubResource("BoxMesh_bar")
+surface_material_override/0 = SubResource("StandardMaterial3D_metal")
+
+[node name="Bar7" type="MeshInstance3D" parent="Hinge/Panel"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.78, 0, 0)
+mesh = SubResource("BoxMesh_bar")
+surface_material_override/0 = SubResource("StandardMaterial3D_metal")
+
+[node name="Bar8" type="MeshInstance3D" parent="Hinge/Panel"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.04, 0, 0)
+mesh = SubResource("BoxMesh_bar")
+surface_material_override/0 = SubResource("StandardMaterial3D_metal")
+
+[node name="RailTop" type="MeshInstance3D" parent="Hinge/Panel"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.22, 0)
+mesh = SubResource("BoxMesh_rail")
+surface_material_override/0 = SubResource("StandardMaterial3D_metal")
+
+[node name="RailMid" type="MeshInstance3D" parent="Hinge/Panel"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0, 0)
+mesh = SubResource("BoxMesh_rail")
+surface_material_override/0 = SubResource("StandardMaterial3D_metal")
+
+[node name="RailBottom" type="MeshInstance3D" parent="Hinge/Panel"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.22, 0)
+mesh = SubResource("BoxMesh_rail")
+surface_material_override/0 = SubResource("StandardMaterial3D_metal")
+
+[node name="LockBox" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.4, 1.15, 0.15)
+mesh = SubResource("BoxMesh_lockbox")
+surface_material_override/0 = SubResource("StandardMaterial3D_lockbox")
+
+[node name="LockLamp" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.4, 1.22, 0.2)
+material_override = SubResource("StandardMaterial3D_lamp")
+mesh = SubResource("SphereMesh_lamp")
+
+[node name="SignBoard" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.95, 0.13)
+mesh = SubResource("BoxMesh_sign")
+surface_material_override/0 = SubResource("StandardMaterial3D_sign")
+
+[node name="SignText" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.95, 0.16)
+pixel_size = 0.005
+double_sided = false
+alpha_cut = 1
+modulate = Color(0.06, 0.06, 0.06, 1)
+text = "PLATFORM  3"
+font_size = 56
+outline_size = 0
+
+[node name="Interactable" type="Area3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.3, 0)
+collision_layer = 4
+collision_mask = 0
+script = ExtResource("2_interactable")
+prompt_text = "Try the Platform 3 gate"
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Interactable"]
+shape = SubResource("BoxShape3D_interact")
