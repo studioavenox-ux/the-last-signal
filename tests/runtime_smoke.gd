@@ -2,6 +2,15 @@ extends SceneTree
 ## Run with: godot --headless --path . --script res://tests/runtime_smoke.gd
 ## Logic route only; still playtest navigation, visuals, sound, and real touch hardware.
 
+## World-space footprint each imported track module must land in once _rebase() and the
+## wrapper scale have been applied: [min x, max x, min z, max z]. Mirrors tests/test_railway.py.
+## Laid gauge 1.680 m (Indian broad gauge), rail top 0.280 m, 11.200 m modules from z -33.6.
+const LAID_TRACK := [
+	[7.02, 8.98, -33.6, -22.4],
+	[6.561, 9.439, -22.4, -11.2],
+	[6.60, 9.40, -11.2, 0.00]
+]
+
 
 func _initialize() -> void:
 	call_deferred("run_route")
@@ -13,12 +22,61 @@ func require(condition: bool, message: String) -> void:
 		quit(1)
 
 
+func check_railway(scene: Node) -> void:
+	var railway: Node3D = scene.world["railway"]
+	require(railway.get_child_count() == LAID_TRACK.size(), "not every railway module instanced")
+	var fallback: Node3D = railway.get_parent().get_node("ProceduralTrackFallback")
+	require(not fallback.visible, "procedural fallback stayed visible with modules loaded")
+	for index in railway.get_child_count():
+		var track: Node3D = railway.get_child(index)
+		var expected: Array = LAID_TRACK[index]
+		var laid := laid_bounds(track)
+		var rests := laid.position.y > -0.005 and laid.position.y < 0.005
+		require(rests, "module %d does not rest on the bed: %s" % [index + 1, laid])
+		require(absf(laid.end.y - 0.28) < 0.01, "module %d rail height wrong: %s" % [index + 1, laid])
+		var on_bed := (
+			absf(laid.position.x - float(expected[0])) < 0.01
+			and absf(laid.end.x - float(expected[1])) < 0.01
+		)
+		require(on_bed, "module %d is off the track bed: %s" % [index + 1, laid])
+		var on_line := (
+			absf(laid.position.z - float(expected[2])) < 0.01
+			and absf(laid.end.z - float(expected[3])) < 0.01
+		)
+		require(on_line, "module %d is off the running line: %s" % [index + 1, laid])
+		for surface in track.find_children("*", "MeshInstance3D", true, false):
+			var mesh: MeshInstance3D = surface
+			require(mesh.material_override != null, "module %d needs the unshipped colormap" % index)
+	var station: Node3D = railway.get_parent()
+	if station.has_node("TracksideParapet"):
+		var parapet: MultiMeshInstance3D = station.get_node("TracksideParapet")
+		require(parapet.multimesh != null, "building kit parapet has no mesh")
+		require(parapet.multimesh.instance_count == 6, "parapet instance count is wrong")
+		require(parapet.material_override != null, "parapet needs the unshipped colormap")
+
+
+func laid_bounds(track: Node3D) -> AABB:
+	var total := AABB()
+	var found := false
+	for surface in track.find_children("*", "MeshInstance3D", true, false):
+		var mesh: MeshInstance3D = surface
+		if mesh.mesh == null:
+			continue
+		var local: AABB = track.global_transform.affine_inverse() * (
+			mesh.global_transform * mesh.get_aabb()
+		)
+		total = local if not found else total.merge(local)
+		found = true
+	return total
+
+
 func run_route() -> void:
 	var scene = load("res://scenes/main.tscn").instantiate()
 	root.add_child(scene)
 	await process_frame
 	require(scene.state == "title", "title did not open")
 	require(scene.world["materials"]["floor"].albedo_texture != null, "wear texture missing")
+	check_railway(scene)
 	scene.open_settings()
 	require(scene.state == "settings" and scene.ui.settings_screen.visible, "title settings failed")
 	scene.close_settings()

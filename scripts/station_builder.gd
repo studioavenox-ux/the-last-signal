@@ -1,8 +1,40 @@
 extends RefCounted
 ## Low-poly station assembled from primitive meshes and box collisions at runtime.
 const Interactable = preload("res://scripts/interactable.gd")
+# Platform 03 railway, from the Kenney Train Kit. Measured out of the .glb vertex
+# buffers: each module is 1.000 wide, 0.100 tall, 4.000 long, rail heads at x = +/-0.30
+# (0.600 gauge), rails reaching both end faces so modules butt together seamlessly, and
+# a root node offset to y = -1 by the Unity exporter that _rebase() measures away.
+const RAILWAY_CENTER_X := 8.0
+# Uniform on purpose. The kit is authored at a toy 0.600 m gauge; a single 2.8 on all
+# three axes brings it to 1.680 m, Indian broad gauge (1676 mm), which is what the
+# 2.65 m wide train needs. One scale everywhere keeps the kit's own sleeper and ballast
+# proportions instead of stretching them, and puts the module at 2.800 x 11.200 m.
+# RAILWAY_GAUGE and RAILWAY_PIECE_LENGTH are 0.6 and 4.0 times that scale; both are
+# re-derived from the mesh and cross-checked in tests/test_railway.py.
+const RAILWAY_GAUGE := 1.68
+const RAILWAY_TRACK_SCALE := Vector3(2.8, 2.8, 2.8)
+const RAILWAY_PIECE_LENGTH := 11.2
+# Three modules reach 33.6 m out, past the barrier at z = -12.9, so the line runs off
+# into the night under the arriving train instead of stopping at a wall. Degradation
+# increases away from the platform: sound track, wrecked ballast, then bare rails.
+const RAILWAY_START_Z := -33.6
+const RAILWAY_PIECES := [
+	{"path": "res://railroad-rail-straight.glb", "material": "rail_steel"},
+	{"path": "res://railroad-damaged-straight.glb", "material": "ballast"},
+	{"path": "res://railroad-straight.glb", "material": "ballast"},
+]
+# Kenney Building Kit low wall as the trackside parapet. Measured 0.100 thick, 1.200
+# tall, 2.000 long and already centred on its origin, so it needs no rebasing. Laid at
+# the kit's own 1 unit = 1 m scale, which is what the station walls are built to.
+const PARAPET_PATH := "res://kenney/wall-low.glb"
+const PARAPET_X := 9.60
+const PARAPET_STEP := 2.0
+const PARAPET_COUNT := 6
+const PARAPET_FIRST_Z := -12.0
 
 var root: Node3D
+var track_fallback: Node3D
 var materials := {}
 
 
@@ -22,7 +54,9 @@ func build(scene_root: Node3D) -> Dictionary:
 		"teal": mat(Color(0.25, 0.72, 0.69), true),
 		"off": mat(Color(0.10, 0.13, 0.13)),
 		"glass": mat(Color(0.12, 0.31, 0.34)),
-		"water": mat(Color(0.10, 0.24, 0.27))
+		"water": mat(Color(0.10, 0.24, 0.27)),
+		"ballast": mat(Color(0.21, 0.20, 0.19)),
+		"rail_steel": mat(Color(0.46, 0.48, 0.50))
 	}
 	# Three tiny deterministic textures add wear without external assets or import dependencies.
 	materials["floor"].albedo_texture = grime_texture(31, true)
@@ -50,12 +84,30 @@ func build(scene_root: Node3D) -> Dictionary:
 	box("Platform slab", Vector3(-2, -0.15, -6.5), Vector3(16, 0.3, 13), "floor")
 	# Keep tracks level with the platform: no step-up trap if a player walks onto them.
 	box("Track bed", Vector3(8, -0.15, -6.5), Vector3(4, 0.3, 13), "dark")
+	# Procedural sleepers and rails stay in the tree as the fallback railway. railway()
+	# hides this group only if every imported module below loads successfully.
+	track_fallback = Node3D.new()
+	track_fallback.name = "ProceduralTrackFallback"
+	root.add_child(track_fallback)
+	var station_root := root
+	root = track_fallback
+	# Sized to the imported module at 2.8 so the fallback reads the same as the real
+	# track: sleepers 2.800 x 0.700 with their top at 0.21, rails 0.280 square at 0.28.
 	for z in range(-12, 0, 2):
-		box("Sleeper", Vector3(8, 0.07, float(z)), Vector3(3.8, 0.13, 0.22), "rust", false)
-	for x in [6.55, 9.45]:
-		box("Rail", Vector3(x, 0.14, -6.5), Vector3(0.13, 0.18, 13), "metal", false)
+		box("Sleeper", Vector3(8, 0.11, float(z)), Vector3(2.8, 0.2, 0.7), "rust", false)
+	for x in [RAILWAY_CENTER_X - RAILWAY_GAUGE * 0.5, RAILWAY_CENTER_X + RAILWAY_GAUGE * 0.5]:
+		box("Rail", Vector3(x, 0.14, -6.5), Vector3(0.28, 0.28, 13), "metal", false)
+	root = station_root
+	# The kit's ballast stops 0.207 short of each module end, and the bare-rail module
+	# has none at all, so one continuous formation strip runs under the whole 33.6 m.
+	# Its top sits 0.01 under the ballast shoulder, hiding every seam. No collision.
+	box("Ballast formation", Vector3(8, 0.0, -16.8), Vector3(2.8, 0.26, 33.6), "dark", false)
+	# Imported GLB track laid over that bed; see railway() for the alignment maths.
+	var railway_group := railway()
 	box("Platform end barrier", Vector3(0, 0.8, -12.9), Vector3(20, 1.6, 0.22), "metal")
 	box("Track-side boundary", Vector3(9.8, 0.55, -6.5), Vector3(0.3, 1.1, 13), "dark")
+	# Building Kit parapet standing just inside that kerb's platform-facing side.
+	parapet()
 	box(
 		"Yellow platform edge", Vector3(5.87, 0.012, -6.5), Vector3(0.12, 0.025, 13), "amber", false
 	)
@@ -267,27 +319,28 @@ func build(scene_root: Node3D) -> Dictionary:
 	train.position.z = -16.0
 	var old_root := root
 	root = train
-	box("Train carriage", Vector3(8.1, 1.18, -10.4), Vector3(2.65, 2.4, 3.55), "dark", false)
-	box("Train roof", Vector3(8.1, 2.44, -10.4), Vector3(2.82, 0.16, 3.7), "metal", false)
-	box("Train waist stripe", Vector3(6.755, 1.0, -10.4), Vector3(0.035, 0.09, 3.5), "rust", false)
+	box("Train carriage", Vector3(8.0, 1.18, -10.4), Vector3(2.65, 2.4, 3.55), "dark", false)
+	box("Train roof", Vector3(8.0, 2.44, -10.4), Vector3(2.82, 0.16, 3.7), "metal", false)
+	box("Train waist stripe", Vector3(6.655, 1.0, -10.4), Vector3(0.035, 0.09, 3.5), "rust", false)
 	for z in [-11.45, -10.55, -9.65]:
 		box(
 			"Unlit carriage window",
-			Vector3(6.75, 1.76, z),
+			Vector3(6.65, 1.76, z),
 			Vector3(0.04, 0.56, 0.6),
 			"glass",
 			false
 		)
 		box(
-			"Window upper rail", Vector3(6.71, 2.06, z), Vector3(0.045, 0.055, 0.67), "metal", false
+			"Window upper rail", Vector3(6.61, 2.06, z), Vector3(0.045, 0.055, 0.67), "metal", false
 		)
+	# Bogies sit over the laid gauge rather than the old 6.55 / 9.45 box rails.
 	for z in [-11.65, -9.25]:
-		for x in [7.2, 8.9]:
+		for x in [RAILWAY_CENTER_X - RAILWAY_GAUGE * 0.5, RAILWAY_CENTER_X + RAILWAY_GAUGE * 0.5]:
 			box("Train wheel", Vector3(x, 0.14, z), Vector3(0.42, 0.3, 0.22), "rust", false)
-	box("Cab glass", Vector3(8.1, 1.86, -8.58), Vector3(1.9, 0.64, 0.07), "glass", false)
-	box("Cab number plate", Vector3(8.1, 2.28, -8.55), Vector3(0.72, 0.2, 0.07), "metal", false)
-	label("03", Vector3(8.1, 2.29, -8.49), 0.0, Color(0.94, 0.63, 0.24), 18)
-	for x in [7.3, 8.9]:
+	box("Cab glass", Vector3(8.0, 1.86, -8.58), Vector3(1.9, 0.64, 0.07), "glass", false)
+	box("Cab number plate", Vector3(8.0, 2.28, -8.55), Vector3(0.72, 0.2, 0.07), "metal", false)
+	label("03", Vector3(8.0, 2.29, -8.49), 0.0, Color(0.94, 0.63, 0.24), 18)
+	for x in [7.2, 8.8]:
 		box("Headlamp", Vector3(x, 1.17, -8.56), Vector3(0.2, 0.2, 0.09), "amber", false)
 	root = old_root
 	var hall_light := light(Vector3(0, 2.92, 5.5), Color(0.97, 0.59, 0.31), 1.0, 8.0)
@@ -322,8 +375,131 @@ func build(scene_root: Node3D) -> Dictionary:
 		"relay_lamp": relay_lamp,
 		"platform_lamp": platform_lamp,
 		"materials": materials,
+		"railway": railway_group,
 		"clue": clue
 	}
+
+
+func railway() -> Node3D:
+	## Lays the imported Train Kit modules end to end along the Platform 03 running line.
+	## Every module keeps its own pivot, so the wrappers below are the only thing that
+	## decides placement; a missing module leaves the procedural fallback in place.
+	var group := Node3D.new()
+	group.name = "RailwayModels"
+	root.add_child(group)
+	var laid := 0
+	for index in RAILWAY_PIECES.size():
+		var piece: Dictionary = RAILWAY_PIECES[index]
+		var path: String = piece["path"]
+		if not ResourceLoader.exists(path):
+			push_warning("Railway module missing, procedural fallback stays: " + path)
+			continue
+		var resource := load(path)
+		if not (resource is PackedScene):
+			push_warning("Railway module did not import as a scene: " + path)
+			continue
+		var instance := (resource as PackedScene).instantiate() as Node3D
+		if instance == null:
+			push_warning("Railway module has no 3D root: " + path)
+			continue
+		var wrapper := Node3D.new()
+		wrapper.name = "Track %d" % (index + 1)
+		wrapper.position = Vector3(
+			RAILWAY_CENTER_X,
+			0.0,
+			RAILWAY_START_Z + RAILWAY_PIECE_LENGTH * (float(index) + 0.5)
+		)
+		wrapper.scale = RAILWAY_TRACK_SCALE
+		group.add_child(wrapper)
+		wrapper.add_child(instance)
+		_rebase(instance)
+		_reskin(instance, piece["material"])
+		laid += 1
+	track_fallback.visible = laid == 0
+	return group
+
+
+func parapet() -> void:
+	## Trackside boundary wall from the Kenney Building Kit, laid at the kit's own
+	## 1 unit = 1 m scale. One MultiMesh keeps all six modules in a single draw call.
+	if not ResourceLoader.exists(PARAPET_PATH):
+		push_warning("Building kit parapet missing, procedural kerb stays: " + PARAPET_PATH)
+		return
+	var resource := load(PARAPET_PATH)
+	if not (resource is PackedScene):
+		return
+	var probe := (resource as PackedScene).instantiate() as Node3D
+	if probe == null:
+		return
+	var wall: Mesh
+	for child in probe.find_children("*", "MeshInstance3D", true, false):
+		wall = (child as MeshInstance3D).mesh
+		break
+	probe.free()
+	if wall == null:
+		return
+	var multi := MultiMesh.new()
+	multi.transform_format = MultiMesh.TRANSFORM_3D
+	multi.mesh = wall
+	multi.instance_count = PARAPET_COUNT
+	for index in PARAPET_COUNT:
+		var spot := Vector3(PARAPET_X, 0.0, PARAPET_FIRST_Z + PARAPET_STEP * float(index))
+		multi.set_instance_transform(index, Transform3D(Basis.IDENTITY, spot))
+	var holder := MultiMeshInstance3D.new()
+	holder.name = "TracksideParapet"
+	holder.multimesh = multi
+	holder.material_override = materials["wall"]
+	holder.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	holder.gi_mode = GeometryInstance3D.GI_MODE_DISABLED
+	root.add_child(holder)
+
+
+func _rebase(instance: Node3D) -> void:
+	# These UnityGLTF exports park the whole module 1 m below their root node, so the
+	# imported geometry is re-measured and dropped exactly onto the wrapper origin:
+	# centred across the gauge and along the run, base resting on the track bed at y = 0.
+	var bounds := _module_bounds(instance)
+	if bounds.size == Vector3.ZERO:
+		return
+	instance.position.x -= bounds.position.x + bounds.size.x * 0.5
+	instance.position.y -= bounds.position.y
+	instance.position.z -= bounds.position.z + bounds.size.z * 0.5
+
+
+func _module_bounds(instance: Node3D) -> AABB:
+	var boxes: Array = []
+	_collect_bounds(instance, Transform3D.IDENTITY, boxes)
+	if boxes.is_empty():
+		return AABB()
+	var bounds: AABB = boxes[0]
+	for index in range(1, boxes.size()):
+		bounds = bounds.merge(boxes[index])
+	return bounds
+
+
+func _collect_bounds(node: Node3D, offset: Transform3D, boxes: Array) -> void:
+	# Walked through local transforms rather than global ones so the result is valid
+	# the moment the instance enters the tree, before any transform is flushed.
+	var local := offset * node.transform
+	if node is MeshInstance3D and (node as MeshInstance3D).mesh != null:
+		boxes.append(local * (node as MeshInstance3D).get_aabb())
+	for child in node.get_children():
+		if child is Node3D:
+			_collect_bounds(child, local, boxes)
+
+
+func _reskin(node: Node3D, material_name: String) -> void:
+	# Each module ships a material that points at an external Textures/colormap.png, so
+	# every surface is repainted with a project-original material. Shadows and GI are
+	# off because the station already runs four shadowless lights on Compatibility.
+	if node is MeshInstance3D:
+		var surface := node as MeshInstance3D
+		surface.material_override = materials[material_name]
+		surface.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		surface.gi_mode = GeometryInstance3D.GI_MODE_DISABLED
+	for child in node.get_children():
+		if child is Node3D:
+			_reskin(child, material_name)
 
 
 func mat(color: Color, glowing: bool = false) -> StandardMaterial3D:

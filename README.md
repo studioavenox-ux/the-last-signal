@@ -25,15 +25,20 @@ The route permits finding objects early: clues remain readable, mistaken switch 
 | --- | --- |
 | `project.godot`, `scenes/main.tscn` | Entry scene, desktop bindings, Android landscape and Compatibility renderer |
 | `scripts/game.gd`, `scripts/story_text.gd` | Four chapters, story text, evidence, puzzle, objective state, train and ending |
-| `scripts/station_builder.gd` | Procedural station, 64 px wear textures, canopy, fixtures, rails and detailed train silhouette |
+| `scripts/station_builder.gd` | Procedural station, 64 px wear textures, canopy, fixtures, detailed train silhouette, and the imported Platform 03 railway |
 | `scripts/player.gd`, `scripts/interactable.gd` | First-person physics, look and reusable ray-targets |
 | `scripts/ui/` | Responsive HUD, touch controls, scrollable investigation, notes, title, pause, settings and ending |
 | `scripts/ambient_audio.gd`, `audio/README.md` | Generated rain-like noise, electrical hum, footstep ticks and announcement cues |
-| `docs/ASSETS.md` | Third-party component and license register |
+| `railroad-*.glb`, `License.txt` | Kenney Train Kit (1.1), CC0: three straight modules forming the Platform 03 running line |
+| `kenney/`, `kenney/License.txt` | Kenney Building Kit (1.0), CC0: six modules; `wall-low` is instanced as the trackside parapet |
+| `Textures/colormap.png`, `kenney/Textures/colormap.png` | 260-byte project-original placeholder swatches standing in for the unshipped vendor colormap |
+| `docs/ASSETS.md` | License register, measured module geometry, kit scale reconciliation, texture dependency |
 | `tests/test_project.py`, `tests/test_navigation.py` | Offline resource/state checks and approximate 2D walkability audit |
-| `tests/runtime_smoke.gd` | **Godot-dependent** route, gate raycast, title/settings and pause checks |
+| `tests/test_railway.py` | Reads the real `.glb` vertex buffers and audits gauge, tiling, rail height and the fallback |
+| `tests/test_gdscript_blocks.py` | Catches empty GDScript blocks, which `gdparse` accepts but Godot rejects |
+| `tests/runtime_smoke.gd` | **Godot-dependent** route, gate raycast, title/settings, pause and railway placement checks |
 
-The environment is actual primitive 3D geometry, not a backdrop image. Tiny deterministic wear textures, plaster bands, a barred waiting-room window, electrical conduit, tile seams, puddles, benches, canopy, signal mast, lamps and a segmented train reinforce the teal/amber station identity. Decorative pieces have no collision. Four shadowless local lights and no particles target low-end devices; emergency power changes both bulbs and light levels. Fog is enabled only when not running on mobile. The train is a lightweight animated silhouette. All essential dialogue and announcements are displayed as text; **no voice acting or recorded rain** is included. The user-provided reference images are not packaged.
+The environment is actual primitive 3D geometry, not a backdrop image, with two exceptions drawn from CC0 Kenney kits. **The railway:** Platform 03's running line is three **Train Kit** modules laid by `railway()` in `scripts/station_builder.gd` — sound track under the platform, a ballast-wrecked module past the barrier, then bare rails where the ballast is gone. Each 4 m module is scaled uniformly by 2.8 (so the kit's own sleeper and ballast proportions are preserved, not stretched) into an 11.2 m section, giving a **1.680 m gauge — Indian broad gauge, 1676 mm** — with rails at x = 7.16 / 8.84 and a 0.28 m rail top. Three sections run 33.6 m out from the concourse wall, past the barrier at z = −12.9, so the line recedes into the night under the arriving train instead of stopping at a wall. All three modules carry identical rail profiles reaching both end faces, so the gauge is continuous and the rails join without a seam; a single formation strip under the whole run hides the gap where each module's ballast stops short. `_rebase()` measures the imported bounding box at runtime and rebases it, cancelling the `y = −1` root offset the Unity exporter left in the files. **The building kit:** six `wall-low` modules form the trackside parapet as one `MultiMeshInstance3D`, laid unscaled at the Building Kit's own 1 unit = 1 m, which is the scale the station walls are built to. If any module fails to import, the procedural sleepers and rails (`ProceduralTrackFallback`) stay visible instead, so the level never loses its track. The railway costs 984 triangles across 5 draw calls, casts no shadows, and uses no GI. Tiny deterministic wear textures, plaster bands, a barred waiting-room window, electrical conduit, tile seams, puddles, benches, canopy, signal mast, lamps and a segmented train reinforce the teal/amber station identity. Decorative pieces have no collision, including the imported track, which is visual only. Four shadowless local lights and no particles target low-end devices; emergency power changes both bulbs and light levels. Fog is enabled only when not running on mobile. The train is a lightweight animated silhouette, centred on the track centreline with its bogies over the laid gauge. All essential dialogue and announcements are displayed as text; **no voice acting or recorded rain** is included. The user-provided reference images are not packaged.
 
 ## Testing
 
@@ -43,10 +48,25 @@ Offline checks (Python 3, standard library only):
 python3 -m unittest discover -s tests -v
 ```
 
+This runs `test_project.py` (resource and story-state checks), `test_navigation.py` (2D
+walkability audit), `test_railway.py` and `test_gdscript_blocks.py`. `test_railway.py` unpacks
+the real vertex buffers out of the `.glb` modules and audits the placement constants in
+`station_builder.gd` against them: shared gauge, uniform scale, rail height, module tiling,
+formation-strip coverage, the texture dependency, and the retained fallback.
+`test_gdscript_blocks.py` exists because `gdparse` accepts a loop or branch whose body is only
+a comment — Godot rejects it — and that mistake was made once in this file's history.
+
+Latest run on this branch:
+
+```
+Ran 30 tests ... OK          (test_project 6, test_navigation 2, test_railway 19, blocks 3)
+gdparse  OK                  gdlint  Success: no problems found
+```
+
 Optional syntax and style checks with `gdtoolkit` (a testing tool, **not** a game dependency):
 
 ```sh
-python3 -m pip install gdtoolkit==4.5.0
+python3 -m pip install gdtoolkit==4.3.0
 gdparse $(find scripts tests -name '*.gd')
 gdlint $(find scripts tests -name '*.gd')
 ```
@@ -58,7 +78,7 @@ godot --headless --path . --editor --quit
 godot --headless --path . --script res://tests/runtime_smoke.gd
 ```
 
-The route test calls most interactions directly and checks a gate raycast; it **does not** prove all objects can be physically reached, collision behavior throughout the level, visual legibility, touch ergonomics, frame rate, sound output, or story length. The Python navigation audit inflates selected wall and furniture footprints for a capsule-sized player on a 2D grid; it is an approximation, not a Godot physics test. Manually test the entire route in the editor and on a real Android phone. Include a wrong switch order, settings and restart, pause/resume, rereading clues, rotating/look with two simultaneous fingers, and phone/override interactions. For desktop collision testing, stand by the gate before and after solving: it must block entry until opened.
+The route test calls most interactions directly, checks a gate raycast, and measures the laid railway in the running scene: all three modules instanced, each resting on the track bed at the expected x/z footprint with a 0.28 m rail top, the procedural fallback hidden, the parapet MultiMesh populated, and every imported surface carrying a project-original material override. It **does not** prove all objects can be physically reached, collision behavior throughout the level, visual legibility, touch ergonomics, frame rate, sound output, or story length. The Python navigation audit inflates selected wall and furniture footprints for a capsule-sized player on a 2D grid; it is an approximation, not a Godot physics test. Manually test the entire route in the editor and on a real Android phone. Include a wrong switch order, settings and restart, pause/resume, rereading clues, rotating/look with two simultaneous fingers, and phone/override interactions. For desktop collision testing, stand by the gate before and after solving: it must block entry until opened.
 
 ## Android export (no APK included)
 
