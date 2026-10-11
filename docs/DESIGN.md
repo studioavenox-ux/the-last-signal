@@ -76,9 +76,13 @@ a new clue is `readable_note.tscn` + a new entry in `StoryText.DOCUMENTS`; a new
 ## Low-end Android budget (design targets — not yet measured on a device)
 
 * **Renderer:** Compatibility (GLES3). No SSAO/SSR/SDFGI/volumetric fog/glow; simple exponential fog.
-* **Lights:** 7 station omni lights + signal glow + phone glow + torch spot; **no shadows**. Lights at zero
+* **Lights:** 11 in total — 7 station omni lights, signal glow, phone glow, torch spot and a lightning
+  directional light that is hidden between flashes; **no shadows**. Lights at zero
   energy are hidden. Per-room merged meshes keep each mesh under the per-object light limit.
-* **Draw calls:** ~25 merged geometry meshes + props/signs (roughly 100 in total at worst).
+* **Draw calls:** measured 143 visual instances in the whole level — 39 merged geometry meshes (32 room/material
+  meshes + 7 sign boards), 81 small prop meshes (doors, gate bars, switches, clock, fixtures…), 22 text labels and
+  1 particle system. Frustum culling means only part of that is drawn at once. Merging prop meshes (e.g. the 12
+  gate bars) is an easy later optimisation. Not yet profiled on a device.
 * **Textures:** two 128 px procedural textures; materials are flat-coloured StandardMaterial3D.
 * **Particles:** one CPUParticles3D rain emitter (260 particles) over the tracks only.
 * **Physics:** box/capsule shapes only; Jolt physics; 60 ticks/s.
