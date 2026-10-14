@@ -22,7 +22,7 @@ func _ensure_preview_camera() -> void:
 	var camera := Camera3D.new()
 	camera.name = PREVIEW_CAMERA_NAME
 	camera.position = Vector3(29.0, 21.0, 27.0)
+	add_child(camera)
 	camera.look_at(Vector3(0.0, 1.0, -10.0), Vector3.UP)
 	camera.fov = 55.0
 	camera.current = true
-	add_child(camera)
