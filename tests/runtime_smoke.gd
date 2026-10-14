@@ -71,6 +71,26 @@ func laid_bounds(track: Node3D) -> AABB:
 
 
 func run_route() -> void:
+	var preview_resource: PackedScene = load("res://scenes/station_preview.tscn")
+	require(preview_resource != null, "station preview scene did not load")
+	var preview: Node3D = preview_resource.instantiate()
+	root.add_child(preview)
+	await process_frame
+	var preview_station := preview.get_node_or_null("NirvaHalt") as Node3D
+	require(preview_station != null, "station preview did not build its station")
+	var preview_camera := preview.get_node_or_null("PreviewCamera") as Camera3D
+	require(preview_camera != null and preview_camera.current, "station preview camera is not active")
+	require(
+		preview_station.get_node_or_null("TracksideParapet") is MultiMeshInstance3D,
+		"station preview did not build the parapet"
+	)
+	require(
+		preview_station.find_children("*", "OmniLight3D", true, false).size() == 4,
+		"station preview did not build all four station lights"
+	)
+	preview.queue_free()
+	await process_frame
+
 	var scene = load("res://scenes/main.tscn").instantiate()
 	root.add_child(scene)
 	await process_frame

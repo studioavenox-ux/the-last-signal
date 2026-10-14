@@ -1,3 +1,4 @@
+@tool
 extends StaticBody3D
 ## Physical, raycastable interactable. Gameplay decisions live in game.gd.
 

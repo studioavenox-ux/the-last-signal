@@ -1,5 +1,6 @@
+@tool
 extends RefCounted
-## Low-poly station assembled from primitive meshes and box collisions at runtime.
+## Low-poly station assembled from primitive meshes and box collisions at runtime and in the editor.
 const Interactable = preload("res://scripts/interactable.gd")
 # Platform 03 railway, from the Kenney Train Kit. Measured out of the .glb vertex
 # buffers: each module is 1.000 wide, 0.100 tall, 4.000 long, rail heads at x = +/-0.30
@@ -569,15 +570,15 @@ func object(
 
 
 func label(text: String, pos: Vector3, angle: float, color: Color, font_size: int) -> Label3D:
-	var sign := Label3D.new()
-	sign.text = text
-	sign.font_size = font_size
-	sign.pixel_size = 0.008
-	sign.modulate = color
-	sign.position = pos
-	sign.rotation.y = angle
-	root.add_child(sign)
-	return sign
+	var sign_label := Label3D.new()
+	sign_label.text = text
+	sign_label.font_size = font_size
+	sign_label.pixel_size = 0.008
+	sign_label.modulate = color
+	sign_label.position = pos
+	sign_label.rotation.y = angle
+	root.add_child(sign_label)
+	return sign_label
 
 
 func light(pos: Vector3, color: Color, energy: float, radius: float) -> OmniLight3D:
@@ -591,11 +592,11 @@ func light(pos: Vector3, color: Color, energy: float, radius: float) -> OmniLigh
 	return bulb
 
 
-func grime_texture(seed: int, tiled: bool) -> ImageTexture:
+func grime_texture(texture_seed: int, tiled: bool) -> ImageTexture:
 	# One 64 px image per surface family. No runtime image files or external textures.
 	var image := Image.create_empty(64, 64, false, Image.FORMAT_RGBA8)
 	var random := RandomNumberGenerator.new()
-	random.seed = seed
+	random.seed = texture_seed
 	for y in range(64):
 		for x in range(64):
 			var shade := random.randf_range(0.72, 0.98)
