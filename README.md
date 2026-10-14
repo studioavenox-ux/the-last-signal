@@ -5,8 +5,8 @@ A four-chapter, original first-person 3D thriller for **Godot 4.3+**, designed f
 ## Install and run
 
 1. Install the standard Godot 4 editor (4.4.1 recommended). No plugins, downloads or paid assets are required by the game project.
-2. In Godot's Project Manager, import this folder's `project.godot`. Allow imports to finish. Press **F5** to start, or open `scenes/main.tscn` and press **F6**.
-3. Choose **BEGIN / ENTER THE STATION**. The introduction is text-only; tap **CLOSE / CONTINUE** to enter the hall.
+2. In Godot's Project Manager, import this folder's `project.godot`. Allow imports to finish. Press **F5** to start, or open `scenes/main.tscn` and press **F6**. For a station-only 3D view in the editor, open `scenes/station_preview.tscn` directly; its `@tool` script builds the station with the same production builder used by gameplay. This preview does not replace the F5 main scene; press **F6** to run the preview scene by itself.
+3. Choose **BEGIN / ENTER THE STATION** in the game. The introduction is text-only; tap **CLOSE / CONTINUE** to enter the hall.
 
 **Desktop:** WASD/arrows move, mouse looks, **E** interacts, **J** opens collected notes, **Esc** pauses or closes an investigation screen. Click the scene to recapture the mouse. **Android:** left touch stick moves, drag the right half to look, tap **INTERACT**, **NOTES**, or **II PAUSE**. Aim the reticle within approximately 3.3 m. The right look area starts below the top HUD buttons; the stick and interaction button sit in opposite bottom corners. There is no jump, combat or compulsory audio cue.
 
@@ -23,7 +23,8 @@ The route permits finding objects early: clues remain readable, mistaken switch 
 
 | Path | Purpose |
 | --- | --- |
-| `project.godot`, `scenes/main.tscn` | Entry scene, desktop bindings, Android landscape and Compatibility renderer |
+| `project.godot`, `scenes/main.tscn` | Gameplay entry scene, desktop bindings, Android landscape and Compatibility renderer |
+| `scenes/station_preview.tscn`, `scripts/editor/station_preview.gd` | Directly openable station-only editor preview using the production station builder |
 | `scripts/game.gd`, `scripts/story_text.gd` | Four chapters, story text, evidence, puzzle, objective state, train and ending |
 | `scripts/station_builder.gd` | Procedural station, 64 px wear textures, canopy, fixtures, detailed train silhouette, and the imported Platform 03 railway |
 | `scripts/player.gd`, `scripts/interactable.gd` | First-person physics, look and reusable ray-targets |
@@ -36,7 +37,8 @@ The route permits finding objects early: clues remain readable, mistaken switch 
 | `tests/test_project.py`, `tests/test_navigation.py` | Offline resource/state checks and approximate 2D walkability audit |
 | `tests/test_railway.py` | Reads the real `.glb` vertex buffers and audits gauge, tiling, rail height and the fallback |
 | `tests/test_gdscript_blocks.py` | Catches empty GDScript blocks, which `gdparse` accepts but Godot rejects |
-| `tests/runtime_smoke.gd` | **Godot-dependent** route, gate raycast, title/settings, pause and railway placement checks |
+| `tests/test_editor_preview.py` | Guards the directly openable station preview, gameplay entry scene, and built-in name warnings |
+| `tests/runtime_smoke.gd` | **Godot-dependent** preview build, route, gate raycast, title/settings, pause and railway placement checks |
 
 The environment is actual primitive 3D geometry, not a backdrop image, with two exceptions drawn from CC0 Kenney kits. **The railway:** Platform 03's running line is three **Train Kit** modules laid by `railway()` in `scripts/station_builder.gd` — sound track under the platform, a ballast-wrecked module past the barrier, then bare rails where the ballast is gone. Each 4 m module is scaled uniformly by 2.8 (so the kit's own sleeper and ballast proportions are preserved, not stretched) into an 11.2 m section, giving a **1.680 m gauge — Indian broad gauge, 1676 mm** — with rails at x = 7.16 / 8.84 and a 0.28 m rail top. Three sections run 33.6 m out from the concourse wall, past the barrier at z = −12.9, so the line recedes into the night under the arriving train instead of stopping at a wall. All three modules carry identical rail profiles reaching both end faces, so the gauge is continuous and the rails join without a seam; a single formation strip under the whole run hides the gap where each module's ballast stops short. `_rebase()` measures the imported bounding box at runtime and rebases it, cancelling the `y = −1` root offset the Unity exporter left in the files. **The building kit:** six `wall-low` modules form the trackside parapet as one `MultiMeshInstance3D`, laid unscaled at the Building Kit's own 1 unit = 1 m, which is the scale the station walls are built to. If any module fails to import, the procedural sleepers and rails (`ProceduralTrackFallback`) stay visible instead, so the level never loses its track. The railway costs 984 triangles across 5 draw calls, casts no shadows, and uses no GI. Tiny deterministic wear textures, plaster bands, a barred waiting-room window, electrical conduit, tile seams, puddles, benches, canopy, signal mast, lamps and a segmented train reinforce the teal/amber station identity. Decorative pieces have no collision, including the imported track, which is visual only. Four shadowless local lights and no particles target low-end devices; emergency power changes both bulbs and light levels. Fog is enabled only when not running on mobile. The train is a lightweight animated silhouette, centred on the track centreline with its bogies over the laid gauge. All essential dialogue and announcements are displayed as text; **no voice acting or recorded rain** is included. The user-provided reference images are not packaged.
 
@@ -59,7 +61,7 @@ a comment — Godot rejects it — and that mistake was made once in this file's
 Latest run on this branch:
 
 ```
-Ran 30 tests ... OK          (test_project 6, test_navigation 2, test_railway 19, blocks 3)
+Ran 38 tests ... OK          (test_project 6, test_navigation 2, test_railway 23, blocks 3, editor preview 4)
 gdparse  OK                  gdlint  Success: no problems found
 ```
 

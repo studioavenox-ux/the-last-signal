@@ -281,12 +281,12 @@ func place(control: Control, start: Vector2, finish: Vector2) -> void:
 
 
 func overlay(parent: Control) -> ColorRect:
-	var layer := ColorRect.new()
-	place(layer, Vector2.ZERO, Vector2.ONE)
-	layer.color = Color(0.006, 0.019, 0.028, 0.89)
-	layer.mouse_filter = Control.MOUSE_FILTER_STOP
-	parent.add_child(layer)
-	return layer
+	var overlay_rect := ColorRect.new()
+	place(overlay_rect, Vector2.ZERO, Vector2.ONE)
+	overlay_rect.color = Color(0.006, 0.019, 0.028, 0.89)
+	overlay_rect.mouse_filter = Control.MOUSE_FILTER_STOP
+	parent.add_child(overlay_rect)
+	return overlay_rect
 
 
 func panel(parent: Control, start: Vector2, finish: Vector2, color: Color) -> ColorRect:
